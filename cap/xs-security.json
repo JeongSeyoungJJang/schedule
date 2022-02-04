@@ -1,0 +1,38 @@
+{
+  "xsappname": "cap-rememlog-notification",
+  "tenant-mode": "dedicated",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.RememlogViewer",
+      "description": "Rememlog Viewer"
+    },
+    {
+      "name": "$XSAPPNAME.RememlogManager",
+      "description": "Rememlog Manager"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "RememlogViewer",
+      "description": "Rememlog Viewer",
+      "scope-references": [
+        "$XSAPPNAME.RememlogViewer"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "RememlogManager",
+      "description": "Rememlog Manager",
+      "scope-references": [
+        "$XSAPPNAME.RememlogManager"
+      ],
+      "attribute-references": []
+    }
+  ],
+  "oauth2-configuration": {
+    "redirect-uris": [
+      "http://localhost:5001/"
+    ]
+  }
+}

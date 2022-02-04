@@ -1,0 +1,81 @@
+## Generated mta.yaml based on template version 0.4.0
+## appName = cap-rememlog-notification
+## language=nodejs; multitenant=false
+## approuter=
+_schema-version: '3.1'
+ID: cap-rememlog-notification
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx -p @sap/cds-dk cds build --production
+
+modules:
+  # --------------------- SERVER MODULE ------------------------
+  - name: cap-rememlog-notification-srv
+    # ------------------------------------------------------------
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    requires:
+      # Resources extracted from CAP configuration
+      - name: cap-config-dev
+      - name: cap-rememlog-notification-uaa
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+
+  # -------------------- SIDECAR MODULE ------------------------
+  - name: cap-rememlog-notification-db-deployer
+    # ------------------------------------------------------------
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      # 'hana' and 'xsuaa' resources extracted from CAP configuration
+      - name: cap-config-dev
+      - name: cap-rememlog-notification-uaa
+
+resources:
+  # services extracted from CAP configuration
+  # 'service-plan' can be configured via 'cds.requires.<name>.vcap.plan'
+  # ------------------------------------------------------------
+  - name: cap-config-dev
+    # ------------------------------------------------------------
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana # or 'hanatrial' on trial landscapes
+      service-plan: hdi-shared
+    properties:
+      hdi-service-name: ${service-name}
+  # ------------------------------------------------------------
+  - name: cap-rememlog-notification-uaa
+    # ------------------------------------------------------------
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: cap-rememlog-notification-${space} #  name + space dependency
+        tenant-mode: dedicated
+        role-collections:
+          - name: 'RememlogViewer-${space}'
+            description: View Rememlog
+            role-template-references:
+              - $XSAPPNAME.RememlogViewer
+          - name: 'RememlogManager-${space}'
+            description: Manage Rememlog
+            role-template-references:
+              - $XSAPPNAME.RememlogManager

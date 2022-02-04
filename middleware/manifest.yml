@@ -1,0 +1,6 @@
+applications:
+- name: noti_middleware
+  memory: 128M
+  path: .
+  buildpacks:
+    - nodejs_buildpack
